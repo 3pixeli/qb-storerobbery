@@ -149,8 +149,8 @@ RegisterNetEvent('lockpicks:UseLockpick', function(isAdvanced)
                     TriggerServerEvent('qb-storerobbery:server:callCops', 'cashier', currentRegister, streetLabel, pos)
                     copsCalled = true
                 end
-                local success = exports["nopixel-minigame"]:Lockpick("Lockpick", 3, 40)
-                if success then
+                local ok = exports["nopixel-minigame"]:Lockpick("Lockpick", 3, 40)
+                if ok then
                     success()
                 else
                     fail()
@@ -257,7 +257,7 @@ function success()
             action = 'kekw',
         })
     end
-end)
+end
 
 function LockpickDoorAnim(time)
     time = time / 1000
@@ -348,7 +348,7 @@ function fail()
         TriggerServerEvent('evidence:server:CreateFingerDrop', pos)
         QBCore.Functions.Notify(Lang:t('error.you_broke_the_lock_pick'))
     end
-end)
+end
 
 -- RegisterNUICallback('exit', function(_, cb)
 --     lockpick(false)
