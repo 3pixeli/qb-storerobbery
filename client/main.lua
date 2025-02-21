@@ -73,13 +73,9 @@ CreateThread(function()
                                         })
                                         SetNuiFocus(true, true)
                                     else
-                                        local success = exports["nopixel-minigame"]:Lockpick("Safe Lockpick", 3, 40)
-                                        if success then
-                                            QBCore.Functions.Notify("Safe opened..", "success")
-                                        else
-                                            QBCore.Functions.Notify("Safe opening failed..", "error")
-                                        end
-                                        TriggerEvent('SafeCracker:EndMinigame', success)
+                                        QBCore.Functions.TriggerCallback('qb-storerobbery:server:getPadlockCombination', function(combination)
+                                            TriggerEvent('SafeCracker:StartMinigame', combination)
+                                        end, safe)
                                     end
 
                                     if not copsCalled then
