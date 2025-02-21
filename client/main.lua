@@ -134,40 +134,26 @@ RegisterNetEvent('lockpicks:UseLockpick', function(isAdvanced)
         local dist = #(pos - Config.Registers[k][1].xyz)
         if dist <= 1 and not Config.Registers[k].robbed then
             if CurrentCops >= Config.MinimumStoreRobberyPolice then
-                if usingAdvanced then
-                    lockpick(true)
-                    currentRegister = k
-                    if not QBCore.Functions.IsWearingGloves() then
-                        TriggerServerEvent('evidence:server:CreateFingerDrop', pos)
+                currentRegister = k
+                if not QBCore.Functions.IsWearingGloves() then
+                    TriggerServerEvent('evidence:server:CreateFingerDrop', pos)
+                end
+                if not copsCalled then
+                    local s1, s2 = GetStreetNameAtCoord(pos.x, pos.y, pos.z)
+                    local street1 = GetStreetNameFromHashKey(s1)
+                    local street2 = GetStreetNameFromHashKey(s2)
+                    local streetLabel = street1
+                    if street2 ~= nil then
+                        streetLabel = streetLabel .. ' ' .. street2
                     end
-                    if not copsCalled then
-                        local s1, s2 = GetStreetNameAtCoord(pos.x, pos.y, pos.z)
-                        local street1 = GetStreetNameFromHashKey(s1)
-                        local street2 = GetStreetNameFromHashKey(s2)
-                        local streetLabel = street1
-                        if street2 ~= nil then
-                            streetLabel = streetLabel .. ' ' .. street2
-                        end
-                        TriggerServerEvent('qb-storerobbery:server:callCops', 'cashier', currentRegister, streetLabel, pos)
-                        copsCalled = true
-                    end
+                    TriggerServerEvent('qb-storerobbery:server:callCops', 'cashier', currentRegister, streetLabel, pos)
+                    copsCalled = true
+                end
+                local success = exports["nopixel-minigame"]:Lockpick("Lockpick", 3, 40)
+                if success then
+                    success()
                 else
-                    lockpick(true)
-                    currentRegister = k
-                    if not QBCore.Functions.IsWearingGloves() then
-                        TriggerServerEvent('evidence:server:CreateFingerDrop', pos)
-                    end
-                    if not copsCalled then
-                        local s1, s2 = GetStreetNameAtCoord(pos.x, pos.y, pos.z)
-                        local street1 = GetStreetNameFromHashKey(s1)
-                        local street2 = GetStreetNameFromHashKey(s2)
-                        local streetLabel = street1
-                        if street2 ~= nil then
-                            streetLabel = streetLabel .. ' ' .. street2
-                        end
-                        TriggerServerEvent('qb-storerobbery:server:callCops', 'cashier', currentRegister, streetLabel, pos)
-                        copsCalled = true
-                    end
+                    fail()
                 end
             else
                 QBCore.Functions.Notify(Lang:t('error.minimum_store_robbery_police', { MinimumStoreRobberyPolice = Config.MinimumStoreRobberyPolice }), 'error')
@@ -207,14 +193,14 @@ DrawText3Ds = function(coords, text)
     ClearDrawOrigin()
 end
 
-function lockpick(bool)
-    SetNuiFocus(bool, bool)
-    SendNUIMessage({
-        action = 'ui',
-        toggle = bool,
-    })
-    SetCursorLocation(0.5, 0.2)
-end
+-- function lockpick(bool)
+--     SetNuiFocus(bool, bool)
+--     SendNUIMessage({
+--         action = 'ui',
+--         toggle = bool,
+--     })
+--     SetCursorLocation(0.5, 0.2)
+-- end
 
 function loadAnimDict(dict)
     while (not HasAnimDictLoaded(dict)) do
@@ -236,9 +222,8 @@ end
 
 local openingDoor = false
 
-RegisterNUICallback('success', function(_, cb)
+function success()
     if currentRegister ~= 0 then
-        lockpick(false)
         TriggerServerEvent('qb-storerobbery:server:setRegisterStatus', currentRegister)
         local lockpickTime = 25000
         LockpickDoorAnim(lockpickTime)
@@ -272,7 +257,6 @@ RegisterNUICallback('success', function(_, cb)
             action = 'kekw',
         })
     end
-    cb('ok')
 end)
 
 function LockpickDoorAnim(time)
@@ -347,7 +331,7 @@ RegisterNUICallback('CombinationFail', function(_, cb)
     cb('ok')
 end)
 
-RegisterNUICallback('fail', function(_, cb)
+function fail()
     if usingAdvanced then
         if math.random(1, 100) < 20 then
             TriggerServerEvent('qb-storerobbery:server:removeAdvancedLockpick')
@@ -364,14 +348,12 @@ RegisterNUICallback('fail', function(_, cb)
         TriggerServerEvent('evidence:server:CreateFingerDrop', pos)
         QBCore.Functions.Notify(Lang:t('error.you_broke_the_lock_pick'))
     end
-    lockpick(false)
-    cb('ok')
 end)
 
-RegisterNUICallback('exit', function(_, cb)
-    lockpick(false)
-    cb('ok')
-end)
+-- RegisterNUICallback('exit', function(_, cb)
+--     lockpick(false)
+--     cb('ok')
+-- end)
 
 RegisterNUICallback('TryCombination', function(data, cb)
     QBCore.Functions.TriggerCallback('qb-storerobbery:server:isCombinationRight', function(combination)
